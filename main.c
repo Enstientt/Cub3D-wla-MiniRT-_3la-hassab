@@ -3,13 +3,15 @@
 #include <stdbool.h>
 #include <string.h>
 #include </Users/zessadqu/Desktop/MLX42/include/MLX42/MLX42.h>
+//#include </home/zessadqu/Desktop/MLX42/include/MLX42/MLX42.h>
 #include <math.h>
 
-#define WIDTH 576
-#define HEIGHT 576
+#define WIDTH 400
+#define HEIGHT 400
 
 typedef struct player
 {
+	mlx_t *mlx;
 	int x;
 	int y;
 	int turn_direction;
@@ -114,9 +116,11 @@ void map(double *x_r, double *y_r, int x, int y)
 	*y_r = (double)y /(HEIGHT/4) - 2.0; 
 }
 
-int circel(double x_r, double y_r, double raduis)
+int circel(double x_r, double y_r, double raduis, t_player *player)
 {
-	if (  x_r *x_r + y_r * y_r  < (raduis * raduis))
+	double x_rr, y_rr;
+	map(&x_rr, &y_rr, player->x, player->y); 
+	if (  (x_r - x_rr ) *(x_r - x_rr ) + (y_r - y_rr ) * (y_r - y_rr )  < (raduis * raduis))
 		return (1);
 	return (0);
 }
@@ -124,16 +128,16 @@ int circel(double x_r, double y_r, double raduis)
 void put_player(t_player *player)
 {
 	double x_r , y_r;
-	int x = (WIDTH / 2) - 8;
+	int x = 0;;
 	int y ; 
 
-	while (x < WIDTH / 2)
+	while (x < WIDTH)
 	{
-		y = (HEIGHT / 2) - 8;
-		while ( y < (HEIGHT / 2) )
+		y = 0;
+		while ( y < HEIGHT )
 		{
 			map(&x_r, &y_r, x, y);
-			if (circel(x_r, y_r, 0.05))
+			if (circel(x_r, y_r, 0.07, player))
 				mlx_put_pixel(g_img, x, y, get_rgba(255,0,0,255));
 			y++;
 		}
@@ -153,9 +157,9 @@ void put_rect(int size, int x,int y, int color)
 		while (y < line)
 		{
 			if (color == 1)
-				mlx_put_pixel(g_img, x, y, get_rgba(0, 0, 0,0));
+				mlx_put_pixel(g_img, x, y, get_rgba(0, 0, 0,255));
 			else
-				mlx_put_pixel(g_img, x, y, get_rgba(155, 155, 255, 0));
+				mlx_put_pixel(g_img, x, y, get_rgba(155, 155, 255, 255));
 			y++;
 		}
 		x++;
@@ -165,11 +169,11 @@ void	draw_map(char **map, int size, int x, int y)
 {
 	int i=0;
 	int j=0;
-	while (i < WIDTH/size)
+	while (i < 11)
 	{
 		y = 0;
 		j = 0;
-		while (j < HEIGHT/size)
+		while (j < 15)
 		{
 			if (map[i][j] == '1')
 				put_rect(size, x, y, 1);
@@ -183,64 +187,60 @@ void	draw_map(char **map, int size, int x, int y)
 
 void	hook(void* param)
 {
-	mlx_t* mlx;
-	mlx = param;
-	if (mlx_is_key_down(mlx, MLX_KEY_ESCAPE))
-		mlx_close_window(mlx);
-	if (mlx_is_key_down(mlx, MLX_KEY_P))
-		mlx_delete_image(mlx, g_img);
-	if (mlx_is_key_down(mlx, MLX_KEY_R))
-	{
-		raduis =0;
-	}
+	t_player *player;
+	int x = 0;
+	int y = 0;
+		char *map[18] = {
+		"111111111111111",
+        "100000000000101",
+        "100001000000101",
+        "111100000010101",
+        "100000000010101",
+        "100000001111101",
+        "100000000000001",
+        "100000000000001",
+        "111111000111101",
+        "100000000000001",
+        "111111111111111"
+		};
+	player = param;
+	if (mlx_is_key_down(player->mlx, MLX_KEY_ESCAPE))
+		mlx_close_window(player->mlx);
+	if (mlx_is_key_down(player->mlx, MLX_KEY_P))
+		mlx_delete_image(player->mlx, g_img);
+	if (mlx_is_key_down(player->mlx, MLX_KEY_UP))
+		player->y -= 2;
+	if (mlx_is_key_down(player->mlx, MLX_KEY_DOWN))
+		player->y += 2;
+	if (mlx_is_key_down(player->mlx, MLX_KEY_LEFT))
+		player->x -= 2;
+	if (mlx_is_key_down(player->mlx, MLX_KEY_RIGHT))
+		player->x += 2;
+	draw_map(map, 32, x, y);
+	put_player(player);
 
 }
 
 int32_t	main(void)
 {
-	mlx_t*    mlx;
 	t_player player;
 
-	player.x = WIDTH/2;
-	player.y = HEIGHT/2;
+	player.x = WIDTH / 2;
+	player.y = HEIGHT / 2;
 	player.turn_direction = 0;
 	player.walk_direction = 0;
 	player.rotation_angle = M_PI / 2;
 	player.move_speed = 3.0;
 	player.rot_speed = 2 * M_PI / 180;
 
-	int x=0, y = 0;
-		char *map[18] = {
-		"111111111111111111",
-		"100000000000000001",
-		"101100010110111101",
-		"101000101010010011",
-		"110110110101011011",
-		"101000101010010011",
-		"110110110111011011",
-		"101000101010010011",
-		"110101010110110101",
-		"101000101010010011",
-		"101011011011011011",
-		"101000101010010011",
-		"110101010101010101",
-		"101000101010010011",
-		"101101110111010111",
-		"101000101010010011",
-		"101000101010010011",
-		"111111111111111111"
-		};
 
-	mlx = mlx_init(WIDTH, HEIGHT, "MLX42", true);
-	if (!mlx)
+	player.mlx = mlx_init(WIDTH, HEIGHT, "MLX42", true);
+	if (!player.mlx)
 		exit(EXIT_FAILURE);
-	g_img = mlx_new_image(mlx, WIDTH, HEIGHT);
-	mlx_image_to_window(mlx, g_img, 0, 0);
-	double x_r = 0, y_r=0;
-	draw_map(map, 32, x, y);
-	put_player(&player);
-	mlx_loop_hook(mlx, &hook, mlx);
-	mlx_loop(mlx);
-	mlx_terminate(mlx);
+	g_img = mlx_new_image(player.mlx, WIDTH, HEIGHT);
+	mlx_image_to_window(player.mlx, g_img, 0, 0);
+	mlx_loop_hook(player.mlx, &hook, &player);
+	mlx_loop(player.mlx);
+	mlx_terminate(player.mlx);
 	return (EXIT_SUCCESS);
 }
