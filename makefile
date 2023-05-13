@@ -8,7 +8,7 @@ OBJS = $(SRC:.c=.o)
 
 OBJS_bonus = $(SRC_bonus:.c=.o)
 
-MLX = libmlx42.a -Iinclude -lglfw -L"/goinfre/zessadqu/homebrew/lib" -framework Cocoa -framework OpenGL -framework IOKit
+MLX = libmlx42.a -Iinclude -lglfw -L"/Users/zessadqu/Desktop/homebrew/lib" -framework Cocoa -framework OpenGL -framework IOKit
 
 all : $(NAME)
 
